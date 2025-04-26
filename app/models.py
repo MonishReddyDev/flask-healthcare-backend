@@ -62,7 +62,8 @@ class Appointment(db.Model):
     id: int
     user_id: int
     doctor_id: int
-    appointment_time: str
+    start_time:datetime
+    end_time:datetime
     status: str
     created_at: datetime
 
@@ -71,16 +72,17 @@ class Appointment(db.Model):
     doctor_id = db.Column(
     db.Integer,
     db.ForeignKey('doctor.id', name='fk_appointment_doctor_id'),
-    nullable=False)
-  # ✅ Fixed Foreign Key
-    appointment_time = db.Column(db.String(100), nullable=False)
+    nullable=False)# ✅ Fixed Foreign Key
+    start_time = db.Column(db.DateTime,nullable=False)
+    end_time= db.Column(db.DateTime,nullable=False) 
     status = db.Column(db.String(50), default="Booked")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     doctor = relationship("Doctor", backref="appointments", lazy=True)  # ✅ Now relationship works
 
-    def __init__(self, user_id: int, doctor_id: int, appointment_time: str, status: str = "Booked"):
+    def __init__(self, user_id: int, doctor_id: int,start_time:datetime,end_time:datetime, status: str = "Booked"):
         self.user_id = user_id
         self.doctor_id = doctor_id
-        self.appointment_time = appointment_time
+        self.start_time = start_time
+        self.end_time =end_time
         self.status = status

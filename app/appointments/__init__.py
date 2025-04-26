@@ -1,6 +1,8 @@
 from flask import Blueprint,jsonify,request
 from flask_jwt_extended import jwt_required,get_jwt_identity
 from app.models import Appointment,Doctor,db
+from datetime import datetime
+from sqlalchemy import and_
 
 appointments_bp = Blueprint('appointments', __name__, url_prefix='/appointments')
 
@@ -10,33 +12,47 @@ appointments_bp = Blueprint('appointments', __name__, url_prefix='/appointments'
 def book_appointment():
     data = request.get_json()
     doctor_id= data.get('doctor_id')
-    appointment_time = data.get('appointment_time')
+    start_time_str=data.get('start_time')
+    end_time_str = data.get('end_time')
     
-    if not doctor_id or not appointment_time:
-        return jsonify({"error": "Doctor ID and Appointment Time are required."}), 400
+    if not doctor_id or not start_time_str or not end_time_str:
+        return jsonify({"error": "Doctor ID, start time, and end time are required."}), 400
     
+    try:
+        start_time = datetime.strptime(start_time_str,'%Y-%m-%d %H:%M')
+        end_time = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M')
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD HH:MM"}), 400
+    
+    if start_time>=end_time:
+        return jsonify({"error": "Start time must be before end time."}), 400
+    
+    # Check if doctor exists
     doctor = Doctor.query.get(doctor_id)
     
     if not doctor:
         return jsonify({"error": "Doctor not found."}), 404
     
-    existing_appointment=Appointment.query.filter_by(
-        doctor_id=doctor_id,
-        appointment_time=appointment_time,
-         status="Booked"
+    # Check for overlapping appointments
+    # Overlapping check
+    overlapping = Appointment.query.filter(
+    and_(
+        Appointment.doctor_id == doctor_id,
+        Appointment.start_time < end_time, # type: ignore
+        Appointment.end_time > start_time # type: ignore
+    )
     ).first()
     
-    if existing_appointment:
-        return jsonify({"error": "Doctor is already booked for this time slot."}), 409  # Conflict
+    if overlapping:
+        return jsonify({"error": "This time slot is already booked."}), 409
 
-
-    
-    current_user_id= get_jwt_identity()
-    
+    current_user_id = get_jwt_identity()
     new_appointment = Appointment(
-        user_id=int(current_user_id),
+        user_id=current_user_id,
         doctor_id=doctor_id,
-        appointment_time=appointment_time
+        start_time=start_time,
+        end_time=end_time,
+        status="Booked"
     )
     
     db.session.add(new_appointment)

@@ -28,11 +28,13 @@ def create_app():
     from .doctors import doctors_blueprint
     from .recommend import recommend_bp
     from .appointments import appointments_bp
+    from .admin import admin_bp
     
     app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(doctors_blueprint)
     app.register_blueprint(recommend_bp) 
     app.register_blueprint(appointments_bp)    
+    app.register_blueprint(admin_bp) 
 
     return app
