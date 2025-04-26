@@ -42,7 +42,6 @@ def  register():
     
 @auth.route('/login',methods=['POST'])  
 def login():
-
     data = request.get_json()
     
     email = data.get('email')

@@ -1,0 +1,161 @@
+swagger: "2.0"
+info:
+  title: Healthcare Booking API
+  description: Backend API Documentation for Healthcare Management System
+  version: "1.0.0"
+host: localhost:5050
+basePath: /
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: User Registration
+      description: Register a new user account
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            required:
+              - full_name
+              - email
+              - password
+            properties:
+              full_name:
+                type: string
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        201:
+          description: User registered successfully
+        400:
+          description: Email already exists
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User Login
+      description: Login and receive a JWT token
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          description: Login successful
+        400:
+          description: Invalid credentials
+
+  /doctors/:
+    get:
+      tags:
+        - Doctors
+      summary: List all doctors
+      description: Retrieve a list of all available doctors
+      responses:
+        200:
+          description: List of doctors
+
+  /recommend/:
+    post:
+      tags:
+        - Recommendation
+      summary: Recommend a doctor based on user problem
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            required:
+              - problem
+            properties:
+              problem:
+                type: string
+      responses:
+        200:
+          description: Recommended doctors
+
+  /appointments/:
+    post:
+      tags:
+        - Appointments
+      summary: Book an appointment
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            required:
+              - doctor_id
+              - appointment_time
+            properties:
+              doctor_id:
+                type: integer
+              appointment_time:
+                type: string
+      responses:
+        201:
+          description: Appointment booked successfully
+        409:
+          description: Doctor already booked for this slot
+
+  /appointments/me:
+    get:
+      tags:
+        - Appointments
+      summary: View my appointments
+      responses:
+        200:
+          description: List of user's own appointments
+
+  /appointments/{appointment_id}/cancel:
+    put:
+      tags:
+        - Appointments
+      summary: Cancel an appointment
+      parameters:
+        - in: path
+          name: appointment_id
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Appointment cancelled successfully
+        404:
+          description: Appointment not found
+
+  /appointments/{appointment_id}/complete:
+    put:
+      tags:
+        - Appointments
+      summary: Mark an appointment as completed
+      parameters:
+        - in: path
+          name: appointment_id
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Appointment marked as completed
+        404:
+          description: Appointment not found
