@@ -103,5 +103,5 @@ sample_doctors = [
     Doctor(name="Dr. Steven Quill", specialization="Chief of Surgery", experience=21, availability="TTh 11AM-2PM", rating=5.0),
 ]
 
-db.session.add_all(sample_doctors)
+db.session.delete(sample_doctors)
 db.session.commit()

@@ -8,11 +8,6 @@ from app.models import User, db
 auth = Blueprint('auth',__name__,url_prefix="/auth")
 
 
-@auth.route("/ping",methods=['GET'])
-def ping():
-    return jsonify({'message': 'Auth route working! ✅'})
-
-
 @auth.route('/register', methods=['POST'])
 def  register():
     data = request.get_json()
@@ -65,11 +60,16 @@ def login():
         additional_claims=additional_claims,
         expires_delta=timedelta(hours=1))
     
-    return jsonify({'access_token':access_Token}),200
+    return jsonify({
+        "access_token": access_Token,
+        "email": email,
+        "role": user.role
+        
+        }),200
     
         
 
-@auth.route('/me', methods=['GET'])
+@auth.route('/profile', methods=['GET'])
 @jwt_required()
 def get_current_user():
   
@@ -83,6 +83,35 @@ def get_current_user():
     }), 200
 
     
+@auth.route('/profile', methods=['PUT'])
+@jwt_required()
+def update_user():
     
+
+
+    current_user_id =get_jwt_identity()
+    user = User.query.get(current_user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
     
+    data = request.get_json()
     
+    full_name = data.get('full_name')
+    email = data.get('email')
+    
+    if full_name:
+        user.full_name = full_name
+    if email:
+        user.email=email
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Profile updated successfully',
+        'user': {
+            'id': user.id,
+            'full_name': user.full_name,
+            'email': user.email,
+            'role': user.role
+        }
+    }), 200

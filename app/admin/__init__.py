@@ -1,6 +1,6 @@
 from flask import request,jsonify,Blueprint
 from flask_jwt_extended import jwt_required,get_jwt
-from app.models  import db ,Doctor , Appointment
+from app.models  import db ,Doctor , Appointment,User
 
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -15,6 +15,20 @@ def admin_required(fn):
         return fn(*args,**kwargs)
     wrapper.__name__=fn.__name__
     return wrapper
+    
+
+@admin_bp.route('/user/<int:user_id>', methods=['DELETE'])
+@admin_required
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+    
+    db.session.delete(user)
+    db.session.commit()
+    
+    return jsonify({"message": "User deleted successfully."}), 200
     
     
     
@@ -82,7 +96,7 @@ def delete_doctor(doctor_id):
     return jsonify({"message": "Doctor deleted successfully."}), 200
 
     
-    
+ 
 @admin_bp.route('/appointments', methods=['GET'])
 @admin_required
 def view_all_appointments():
@@ -94,7 +108,7 @@ def view_all_appointments():
             "appointment_id": appointment.id,
             "user_id": appointment.user_id,
             "doctor_id": appointment.doctor_id,
-            "appointment_time": appointment.appointment_time,
+         
             "status": appointment.status,
             "created_at": appointment.created_at.strftime('%Y-%m-%d %H:%M:%S')
         })

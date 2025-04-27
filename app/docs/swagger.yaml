@@ -3,7 +3,8 @@ info:
   title: Healthcare Booking API
   description: Backend API Documentation for Healthcare Management System
   version: "1.0.0"
-host: localhost:5050
+
+host: localhost:3000
 basePath: /
 schemes:
   - http
@@ -66,6 +67,18 @@ paths:
         400:
           description: Invalid credentials
 
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Get current authenticated user
+      description: Returns current user's id, email, and role
+      responses:
+        200:
+          description: Current user details
+        401:
+          description: Unauthorized access
+
   /doctors/:
     get:
       tags:
@@ -80,7 +93,8 @@ paths:
     post:
       tags:
         - Recommendation
-      summary: Recommend a doctor based on user problem
+      summary: AI-Based Doctor Recommendation based on Symptoms
+      description: Accepts user-described symptoms and returns a list of recommended doctor specializations using OpenAI GPT model.
       parameters:
         - in: body
           name: body
@@ -91,15 +105,30 @@ paths:
             properties:
               problem:
                 type: string
+                example: "I have chest pain and shortness of breath."
       responses:
         200:
-          description: Recommended doctors
+          description: Recommended specializations based on symptoms
+          schema:
+            type: object
+            properties:
+              problem:
+                type: string
+              recommended_specializations:
+                type: array
+                items:
+                  type: string
+        400:
+          description: Problem description is required
+        429:
+          description: Rate limit exceeded. Too many requests in a short time.
 
   /appointments/:
     post:
       tags:
         - Appointments
       summary: Book an appointment
+      description: Create a new appointment with a doctor for a selected time slot
       parameters:
         - in: body
           name: body
@@ -113,17 +142,21 @@ paths:
                 type: integer
               appointment_time:
                 type: string
+                format: date-time
       responses:
         201:
           description: Appointment booked successfully
+        400:
+          description: Missing or invalid fields
         409:
-          description: Doctor already booked for this slot
+          description: Time slot already booked
 
   /appointments/me:
     get:
       tags:
         - Appointments
       summary: View my appointments
+      description: Retrieve a list of all appointments booked by the authenticated user
       responses:
         200:
           description: List of user's own appointments
@@ -133,6 +166,7 @@ paths:
       tags:
         - Appointments
       summary: Cancel an appointment
+      description: Soft cancel an appointment by updating its status
       parameters:
         - in: path
           name: appointment_id
@@ -149,6 +183,7 @@ paths:
       tags:
         - Appointments
       summary: Mark an appointment as completed
+      description: Mark an existing appointment as completed
       parameters:
         - in: path
           name: appointment_id

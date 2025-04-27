@@ -55,6 +55,17 @@ class Doctor(db.Model):
         self.experience = experience
         self.availability = availability
         self.rating = rating
+    
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "specialization": self.specialization,
+            "experience": self.experience,
+            "availability": self.availability,
+            "rating": self.rating
+        }
 
 
 
@@ -75,7 +86,7 @@ class Appointment(db.Model):
     nullable=False)# ✅ Fixed Foreign Key
     start_time = db.Column(db.DateTime,nullable=False)
     end_time= db.Column(db.DateTime,nullable=False) 
-    status = db.Column(db.String(50), default="Booked")
+    status = db.Column(db.String(50), default="Pending")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     doctor = relationship("Doctor", backref="appointments", lazy=True)  # ✅ Now relationship works
