@@ -1,6 +1,6 @@
 # 🏥 Flask Healthcare Booking System (Backend)
 
-This is a scalable, secure, and production-ready backend built with **Flask** for managing user authentication, AI-based doctor recommendations, and appointment bookings in a healthcare setting.
+This is a scalable, secure, backend built with **Flask** for managing user authentication, AI-based doctor recommendations, and appointment bookings in a healthcare setting.
 
 ---
 
